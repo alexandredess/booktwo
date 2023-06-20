@@ -22,7 +22,7 @@ class AuthorController extends AbstractController
     }
 
      #[Route('/api/author/{id}',name:"detailAuthor",methods:['GET'])]
-    public function getDetailBook(Author $author,SerializerInterface $serializer):JsonResponse{
+    public function getDetailAuthor(Author $author,SerializerInterface $serializer):JsonResponse{
 
         $jsonAuthor = $serializer->serialize($author,'json',['groups'=>'getAuthors']);
         return new JsonResponse($jsonAuthor, Response::HTTP_OK,['accept'=>'json'],true);
