@@ -4,14 +4,42 @@ namespace App\DataFixtures;
 
 
 use App\Entity\Book;
+use App\Entity\User;
 use App\Entity\Author;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    private $userPasswordHasher;
+
+    public function __construct(UserPasswordHasherInterface $userPasswordHasher)
+    {
+        $this->userPasswordHasher = $userPasswordHasher;
+    }
+
     public function load(ObjectManager $manager): void
     {
+
+        //Création d'un user "normal"
+        $user = new User;
+        $user->setEmail("user@bookapi.com");
+        $user->setRoles(["Role_USER"]);
+
+        $user->setPassword($this->userPasswordHasher->hashPassword($user,"password"));
+
+        $manager->persist($user);
+
+        //Création d'un user Admin
+        $userAdmin = new User;
+        $userAdmin->setEmail("admin@bookapi.com");
+        $userAdmin->setRoles(["Role_ADMIN"]);
+
+        $userAdmin->setPassword($this->userPasswordHasher->hashPassword($userAdmin,"password"));
+
+        $manager->persist($userAdmin);
+
         //Création d'une dizaine d'auteurs
         $listAuthor = [];
         for ($i = 0; $i < 10; $i++) {
