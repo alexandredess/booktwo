@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class AuthorController extends AbstractController
@@ -56,5 +57,18 @@ class AuthorController extends AbstractController
         $location = $urlGenerator->generate('detailAuthor',['id'=>$author->getId()],UrlGeneratorInterface::ABSOLUTE_URL);
         //on retourne un JSON avec le status et l'url 
         return new JsonResponse($jsonAuthor,Response::HTTP_CREATED,["location"=>$location],true);
+    }
+
+    #[Route('/api/authors/{id}',name:"updateAuthor",methods:['PUT'])]
+    public function updateAuthor(SerializerInterface $serializer,Request $request,Author $currentAuthor,EntityManagerInterface $manager):JsonResponse{
+
+        $updateAuthor = $serializer->deserialize($request->getContent(),Author::class,'json',[AbstractNormalizer::OBJECT_TO_POPULATE => $currentAuthor]);
+
+        $manager->persist($updateAuthor);
+        $manager->flush();
+
+       return new JsonResponse(null,JsonResponse::HTTP_NO_CONTENT);
+
+        return new JsonResponse();
     }
 }
