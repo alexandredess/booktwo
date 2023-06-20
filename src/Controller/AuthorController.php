@@ -10,9 +10,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 
 class AuthorController extends AbstractController
 {
@@ -42,11 +44,22 @@ class AuthorController extends AbstractController
     }
 
     #[Route('/api/authors',name:"createAuthor",methods:['POST'])]
-    public function createAuthor(SerializerInterface $serializer,Request $request,EntityManagerInterface $manager,UrlGeneratorInterface $urlGenerator, AuthorRepository $authorRepository):JsonResponse{
+    public function createAuthor(
+        SerializerInterface $serializer,
+        Request $request,
+        EntityManagerInterface $manager,
+        UrlGeneratorInterface $urlGenerator, 
+        ValidatorInterface $validator):JsonResponse{
 
         //création variable author et on vient deserialiser le contenu de author
         $author = $serializer->deserialize($request->getContent(),Author::class,'json');       
 
+        //On vérifie les erreurs
+        $errors = $validator->validate($author);
+        if($errors->count()>0){
+            return new JsonResponse($serializer->serialize($errors,'json'),JsonResponse::HTTP_BAD_REQUEST,[],true);
+        }
+        
         //on garde les données dans notre seau
         $manager->persist($author);
         //on expédie

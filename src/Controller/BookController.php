@@ -3,18 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\Book;
-use App\Repository\AuthorRepository;
-use App\Repository\BookRepository;
 use Doctrine\ORM\EntityManager;
+use App\Repository\BookRepository;
+use App\Repository\AuthorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class BookController extends AbstractController
 {
@@ -44,9 +45,21 @@ class BookController extends AbstractController
     }
 
     #[Route('/api/books',name:"createBook",methods:['POST'])]
-    public function createBook(SerializerInterface $serializer,Request $request,EntityManagerInterface $manager,UrlGeneratorInterface $urlGenerator, AuthorRepository $authorRepository):JsonResponse{
+    public function createBook(
+        SerializerInterface $serializer,
+        Request $request,
+        EntityManagerInterface $manager,
+        UrlGeneratorInterface $urlGenerator, 
+        AuthorRepository $authorRepository,
+        ValidatorInterface $validator):JsonResponse{
 
         $book = $serializer->deserialize($request->getContent(),Book::class,'json');
+
+        //On vérifie les erreurs
+        $errors = $validator->validate($book);
+        if($errors->count()>0){
+            return new JsonResponse($serializer->serialize($errors,'json'),JsonResponse::HTTP_BAD_REQUEST,[],true);
+        }
 
         // Récupération de l'ensemble des données envoyées sousforme de tableau
         $content = $request->toArray();
