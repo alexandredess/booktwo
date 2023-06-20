@@ -69,6 +69,5 @@ class AuthorController extends AbstractController
 
        return new JsonResponse(null,JsonResponse::HTTP_NO_CONTENT);
 
-        return new JsonResponse();
     }
 }
