@@ -34,7 +34,7 @@ class AppFixtures extends Fixture
         //Création d'un user Admin
         $userAdmin = new User;
         $userAdmin->setEmail("admin@bookapi.com");
-        $userAdmin->setRoles(["Role_ADMIN"]);
+        $userAdmin->setRoles(["ROLE_ADMIN"]);
 
         $userAdmin->setPassword($this->userPasswordHasher->hashPassword($userAdmin,"password"));
 

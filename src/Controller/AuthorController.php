@@ -14,15 +14,31 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class AuthorController extends AbstractController
 {
     #[Route('/authors', name: 'app_author',methods:['GET'])]
-    public function getAllAuthor(SerializerInterface $serializer,AuthorRepository $authorRepository): JsonResponse
+    public function getAllAuthor(
+        SerializerInterface $serializer,
+        AuthorRepository $authorRepository,
+        Request $request,
+        TagAwareCacheInterface $cachePool): JsonResponse
     {
-        $authorList = $authorRepository->findAll();
-        $jsonAuthorList = $serializer->serialize($authorList,'json',['groups'=>'getAuthors']);
+        $page = $request->get('page',1);
+        $limit = $request->get('limit',3);
+
+        $idCache = "getAllAuthors-".$page."-".$limit;
+
+        $jsonAuthorList = $cachePool->get($idCache,function(ItemInterface $item) use ($authorRepository,$page,$limit,$serializer){
+            $item->tag("authorsCache");
+            $authorList = $authorRepository->findAllWithPagination($page,$limit);
+
+            return $serializer->serialize($authorList,'json',['groups'=>'getAuthors']);
+
+        });
+
         return new JsonResponse($jsonAuthorList, Response::HTTP_OK,['accept'=>'json'],true);
             
     }
