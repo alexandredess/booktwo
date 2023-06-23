@@ -60,6 +60,7 @@ class AppFixtures extends Fixture
 
             // On lie le livre à un auteur pris au hasard dans letableau des auteurs.
             $livre->setAuthor($listAuthor[array_rand($listAuthor)]);
+            $livre->setComment("Commentaire du bibliothécaire".$i);
             $manager->persist($livre);
             }
     $manager->flush();
